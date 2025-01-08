@@ -1,28 +1,42 @@
 public static void main(String[] args) {
-        // Define the current date
-        LocalDate currentDate = LocalDate.now();
+        // Define the date format
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
 
-        // Define date formatter
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+        // Get the current date
+        Calendar calendar = Calendar.getInstance();
+        Date currentDate = calendar.getTime();
 
-        // Calculate the start and end dates for the last four weeks
-        LocalDate week1End = currentDate;
-        LocalDate week1Start = week1End.minusDays(6);
-        LocalDate week2End = week1Start.minusDays(1);
-        LocalDate week2Start = week2End.minusDays(6);
-        LocalDate week3End = week2Start.minusDays(1);
-        LocalDate week3Start = week3End.minusDays(6);
-        LocalDate week4End = week3Start.minusDays(1);
-        LocalDate week4Start = week4End.minusDays(6);
+        // Get the current week start and end dates (Sunday to Saturday)
+        calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+        Date startOfCurrentWeek = calendar.getTime();
+        calendar.add(Calendar.DAY_OF_WEEK, 6); // Add 6 days to get Saturday
+        Date endOfCurrentWeek = calendar.getTime();
 
-        // Calculate the overall date range
-        LocalDate overallStart = week4Start;
-        LocalDate overallEnd = week1End;
+        // Print the current week
+        System.out.println("Current Week (" + dateFormat.format(startOfCurrentWeek) + " to " + dateFormat.format(endOfCurrentWeek) + ")");
 
-        // Print the results
-        System.out.println("Last four weeks date: " + overallStart.format(formatter) + " to " + overallEnd.format(formatter));
-        System.out.println("Week1: " + week1Start.format(formatter) + " to " + week1End.format(formatter));
-        System.out.println("Week2: " + week2Start.format(formatter) + " to " + week2End.format(formatter));
-        System.out.println("Week3: " + week3Start.format(formatter) + " to " + week3End.format(formatter));
-        System.out.println("Week4: " + week4Start.format(formatter) + " to " + week4End.format(formatter));
+        // Get the last four weeks, including 5th to 11th January
+        Calendar weekCalendar = Calendar.getInstance();
+        weekCalendar.setTime(currentDate);
+
+        // Adjust to include the week 5th to 11th January
+        weekCalendar.add(Calendar.WEEK_OF_YEAR, -1); // Go back one week to include 5th-11th Jan
+        weekCalendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY); // Start from Sunday
+        Date startOfWeek1 = weekCalendar.getTime();
+        weekCalendar.add(Calendar.DAY_OF_WEEK, 6); // Add 6 days to get Saturday
+        Date endOfWeek1 = weekCalendar.getTime();
+        
+        // Print the adjusted Week 1
+        System.out.println("Week1: " + dateFormat.format(startOfWeek1) + " to " + dateFormat.format(endOfWeek1));
+
+        // Print the last three weeks (Week2 to Week4)
+        for (int i = 2; i <= 4; i++) {
+            weekCalendar.add(Calendar.WEEK_OF_YEAR, -1); // Move to the previous week
+            weekCalendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+            Date startOfWeek = weekCalendar.getTime();
+            weekCalendar.add(Calendar.DAY_OF_WEEK, 6); // Add 6 days to get Saturday
+            Date endOfWeek = weekCalendar.getTime();
+            
+            System.out.println("Week" + i + ": " + dateFormat.format(startOfWeek) + " to " + dateFormat.format(endOfWeek));
+        }
     }
