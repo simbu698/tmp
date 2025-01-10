@@ -1,23 +1,97 @@
-public static void main(String[] args) {
-        // Current date
-        LocalDate currentDate = LocalDate.now(); // Today is January 8th, 2025
+import React from 'react';
+import './CountTable.css'; // Assuming you are using an external CSS file for styles
 
-        // Find the start of the current week (Sunday)
-        int daysToSubtract = currentDate.getDayOfWeek().getValue() % 7; // Get days to previous Sunday
-        LocalDate startOfWeek = currentDate.minusDays(daysToSubtract);
+const CountTable = ({ vegetablesCount, fruitsCount }) => {
+  // Calculate the total count
+  const totalCount = vegetablesCount + fruitsCount;
 
-        // Print the last four weeks
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+  return (
+    <div className="count-table-container">
+      <h2>Item Count Summary</h2>
+      <table className="count-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td className="category">Vegetables</td>
+            <td>{vegetablesCount}</td>
+          </tr>
+          <tr>
+            <td className="category">Fruits</td>
+            <td>{fruitsCount}</td>
+          </tr>
+          <tr className="total-row">
+            <td className="category">Total</td>
+            <td>{totalCount}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
-        for (int i = 0; i < 4; i++) {
-            // Calculate the end of the current week (Saturday)
-            LocalDate weekEnd = startOfWeek.plusDays(6);  // Saturday of the current week
-            LocalDate weekStart = weekEnd.minusDays(6);   // Sunday of the current week
+export default CountTable;
 
-            // Print week range
-            System.out.println("Week" + (4 - i) + ": " + weekStart.format(formatter) + " to " + weekEnd.format(formatter));
 
-            // Move to the previous week
-            startOfWeek = startOfWeek.minusWeeks(1);
-        }
-    }
+
+
+
+
+
+.count-table-container {
+  width: 70%;
+  margin: 20px auto;
+  font-family: Arial, sans-serif;
+}
+
+h2 {
+  text-align: center;
+  color: #4caf50;
+  margin-bottom: 20px;
+}
+
+.count-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.count-table th,
+.count-table td {
+  padding: 12px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.count-table th {
+  background-color: #4caf50;
+  color: white;
+  font-weight: bold;
+}
+
+.count-table td {
+  font-size: 16px;
+}
+
+.count-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+.category {
+  font-weight: bold;
+  color: #333;
+}
+
+.total-row {
+  background-color: #e0f7fa;
+}
+
+.total-row td {
+  font-weight: bold;
+
+}
