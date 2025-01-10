@@ -1,94 +1,273 @@
+Project Structure:
+java
+Copy code
+json-compare/
+├── public/
+│   ├── index.html
+├── src/
+│   ├── App.js
+│   ├── App.css
+│   ├── JsonCompare.js
+│   ├── index.js
+├── package.json
+└── README.md
+1. public/index.html
+This is the default HTML file for React apps.
+
+html
+Copy code
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSON Comparison Tool</title>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+2. src/App.js
+The main entry point of the React app that integrates the JsonCompare component.
+
+jsx
+Copy code
+// src/App.js
+import React from 'react';
+import JsonCompare from './JsonCompare';
+import './App.css';
+
+function App() {
+  return (
+    <div className="App">
+      <h1>JSON Comparison Tool</h1>
+      <JsonCompare />
+    </div>
+  );
+}
+
+export default App;
+3. src/JsonCompare.js
+The JsonCompare component that renders the two text areas and compares the JSON.
+
+jsx
+Copy code
+// src/JsonCompare.js
 import React, { useState } from 'react';
 import './App.css';
-import JsonDiffPatch from 'jsondiffpatch'; // Import the jsondiffpatch library
 
-const App = () => {
-  const [jsonFile1, setJsonFile1] = useState(null);
-  const [jsonFile2, setJsonFile2] = useState(null);
-  const [diff, setDiff] = useState(null);
+const JsonCompare = () => {
+  const [leftJson, setLeftJson] = useState('{"fruit": "Apple", "size": "Large", "color": "Red"}');
+  const [rightJson, setRightJson] = useState('{"fruit": "Banana", "size": "Large", "price": "1$"}');
+  const [output, setOutput] = useState('');
 
-  const handleFileUpload = (event, fileNumber) => {
-    const file = event.target.files[0];
+  const handleJsonChange = () => {
+    try {
+      const left = JSON.parse(leftJson);
+      const right = JSON.parse(rightJson);
 
-    if (file && file.type === 'application/json') {
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const json = JSON.parse(reader.result);
+      let outputJson = '';
+      const allKeys = new Set([...Object.keys(left), ...Object.keys(right)]);
+      let result = {};
 
-          if (fileNumber === 1) {
-            setJsonFile1(json);
+      allKeys.forEach(key => {
+        if (left[key] !== right[key]) {
+          if (right[key]) {
+            result[key] = {
+              value: right[key],
+              type: 'changed'
+            };
           } else {
-            setJsonFile2(json);
+            result[key] = {
+              value: left[key],
+              type: 'removed'
+            };
           }
 
-          if (jsonFile1 && jsonFile2) {
-            compareJsonFiles(jsonFile1, json);
+          if (!left[key] && right[key]) {
+            result[key] = {
+              value: right[key],
+              type: 'added'
+            };
           }
-        } catch (e) {
-          alert('Invalid JSON file');
+        } else {
+          result[key] = {
+            value: left[key],
+            type: 'same'
+          };
         }
-      };
-      reader.readAsText(file);
-    } else {
-      alert('Please upload a valid JSON file');
+      });
+
+      setOutput(result);
+    } catch (error) {
+      setOutput('Invalid JSON input');
     }
   };
 
-  const compareJsonFiles = (json1, json2) => {
-    const diffResult = JsonDiffPatch.diff(json1, json2);
-    setDiff(diffResult);
-  };
-
   return (
-    <div className="container">
-      <h1>Compare JSON Files</h1>
-      <input type="file" onChange={(e) => handleFileUpload(e, 1)} />
-      <input type="file" onChange={(e) => handleFileUpload(e, 2)} />
-      
-      {diff && (
-        <div>
-          <h2>Differences:</h2>
-          <pre className="diff-output">{renderDiff(diff)}</pre>
-        </div>
-      )}
+    <div style={{ display: 'flex', flexDirection: 'column', margin: '20px' }}>
+      <textarea
+        value={leftJson}
+        onChange={(e) => setLeftJson(e.target.value)}
+        rows="10"
+        cols="50"
+        placeholder="Enter Left JSON (Base)"
+      />
+      <textarea
+        value={rightJson}
+        onChange={(e) => setRightJson(e.target.value)}
+        rows="10"
+        cols="50"
+        placeholder="Enter Right JSON (New)"
+      />
+      <button onClick={handleJsonChange}>Compare</button>
+      <div style={{ marginTop: '20px' }}>
+        {Object.keys(output).length > 0 &&
+          Object.keys(output).map((key) => {
+            const { value, type } = output[key];
+            const highlightClass =
+              type === 'added'
+                ? 'added'
+                : type === 'removed'
+                ? 'removed'
+                : type === 'changed'
+                ? 'changed'
+                : 'same';
+            return (
+              <div key={key} className={highlightClass}>
+                <strong>{key}</strong>: {JSON.stringify(value)}
+              </div>
+            );
+          })}
+      </div>
     </div>
   );
 };
 
-// Function to render the JSON diff in a color-coded format
-const renderDiff = (diff) => {
-  const jsondiffpatch = JsonDiffPatch.create();
-  const html = jsondiffpatch.formatters.html.format(diff);
-  return <div dangerouslySetInnerHTML={{ __html: html }} />;
-};
+export default JsonCompare;
+4. src/App.css
+CSS file for highlighting the differences in the JSON comparison.
 
-export default App;
+css
+Copy code
+/* src/App.css */
+.added {
+  background-color: #a9c46c;
+}
 
+.removed {
+  background-color: #ff9c73;
+}
 
+.changed {
+  background-color: #e5d0ac;
+}
 
+.same {
+  background-color: #d3d3d3;
+}
+5. src/index.js
+This is the entry point for the React app where everything gets rendered to the DOM.
 
-.diff-output {
-  font-family: monospace;
-  background-color: #f8f8f8;
+jsx
+Copy code
+// src/index.js
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+
+ReactDOM.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById('root')
+);
+6. src/index.css
+Basic global CSS to reset some default styling.
+
+css
+Copy code
+/* src/index.css */
+body {
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+textarea {
+  margin: 10px 0;
   padding: 10px;
-  border-radius: 5px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
+  font-family: monospace;
+  font-size: 14px;
 }
 
-/* Color for removed content (deletion) */
-.diff-deleted {
-  background-color: #f8d7da;
-  color: #721c24;
-  text-decoration: line-through;
+button {
+  padding: 10px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  cursor: pointer;
 }
 
-/* Color for added content (insertion) */
-.diff-added {
-  background-color: #d4edda;
-  color: #155724;
+button:hover {
+  background-color: #45a049;
 }
+7. package.json
+The package.json file is generated by create-react-app when you create the app. It includes dependencies for React and other libraries needed for the project.
+
+json
+Copy code
+{
+  "name": "json-compare",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
+How to Run the Project
+After setting up the above structure, run the following command in the terminal to install dependencies:
+bash
+Copy code
+npm install
+Start the development server:
+bash
+Copy code
+npm start
+This will launch the app in your browser, and you can start comparing JSON objects by entering them into the text areas.
+
+
+
 
 
 
