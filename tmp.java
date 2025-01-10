@@ -1,23 +1,36 @@
-public static void main(String[] args) {
-        // Current date
-        LocalDate currentDate = LocalDate.now(); // Today is January 8th, 2025
+import React from 'react';
 
-        // Find the start of the current week (Sunday)
-        int daysToSubtract = currentDate.getDayOfWeek().getValue() % 7; // Get days to previous Sunday
-        LocalDate startOfWeek = currentDate.minusDays(daysToSubtract);
+const CountTable = ({ vegetablesCount, fruitsCount }) => {
+  // Calculate the total count
+  const totalCount = vegetablesCount + fruitsCount;
 
-        // Print the last four weeks
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+  return (
+    <div>
+      <h2>Count Table</h2>
+      <table border="1">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Vegetables</td>
+            <td>{vegetablesCount}</td>
+          </tr>
+          <tr>
+            <td>Fruits</td>
+            <td>{fruitsCount}</td>
+          </tr>
+          <tr>
+            <td>Total</td>
+            <td>{totalCount}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
-        for (int i = 0; i < 4; i++) {
-            // Calculate the end of the current week (Saturday)
-            LocalDate weekEnd = startOfWeek.plusDays(6);  // Saturday of the current week
-            LocalDate weekStart = weekEnd.minusDays(6);   // Sunday of the current week
-
-            // Print week range
-            System.out.println("Week" + (4 - i) + ": " + weekStart.format(formatter) + " to " + weekEnd.format(formatter));
-
-            // Move to the previous week
-            startOfWeek = startOfWeek.minusWeeks(1);
-        }
-    }
+export default CountTable;
