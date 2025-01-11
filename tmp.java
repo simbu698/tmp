@@ -1,5 +1,5 @@
-@@@@@@
-  1. Updated src/JsonCompare.js
+Updated Code
+1. Updated JsonCompare.js
 jsx
 Copy code
 // src/JsonCompare.js
@@ -9,48 +9,32 @@ import './App.css';
 const JsonCompare = () => {
   const [leftJson, setLeftJson] = useState('{"fruit": "Apple", "size": "Large", "color": "Red"}');
   const [rightJson, setRightJson] = useState('{"fruit": "Banana", "size": "Large", "price": "1$"}');
-  const [output, setOutput] = useState('');
+  const [output, setOutput] = useState([]);
 
   const handleJsonChange = () => {
     try {
       const left = JSON.parse(leftJson);
       const right = JSON.parse(rightJson);
-
+      const result = [];
       const allKeys = new Set([...Object.keys(left), ...Object.keys(right)]);
-      let result = {};
 
       allKeys.forEach((key) => {
         if (left[key] !== right[key]) {
           if (right[key] && left[key]) {
-            result[key] = { value: right[key], type: 'changed' };
-          } else if (left[key] && !right[key]) {
-            result[key] = { value: left[key], type: 'removed' };
-          } else if (!left[key] && right[key]) {
-            result[key] = { value: right[key], type: 'added' };
+            result.push({ key, value: `"${key}": "${right[key]}"`, className: 'changed' });
+          } else if (!right[key]) {
+            result.push({ key, value: `"${key}": "${left[key]}"`, className: 'removed' });
+          } else {
+            result.push({ key, value: `"${key}": "${right[key]}"`, className: 'added' });
           }
         } else {
-          result[key] = { value: left[key], type: 'same' };
+          result.push({ key, value: `"${key}": "${left[key]}"`, className: 'same' });
         }
       });
 
-      let outputJson = '';
-      Object.keys(result).forEach((key) => {
-        const value = result[key].value;
-        const type = result[key].type;
-
-        // Highlighting the rows based on the type
-        let highlightClass = '';
-        if (type === 'added') highlightClass = 'added';
-        if (type === 'removed') highlightClass = 'removed';
-        if (type === 'changed') highlightClass = 'changed';
-        if (type === 'same') highlightClass = 'same';
-
-        outputJson += `<div class="${highlightClass}"><strong>${key}</strong>: ${JSON.stringify(value)}</div>`;
-      });
-
-      setOutput(outputJson);
-    } catch (error) {
-      setOutput('Invalid JSON input');
+      setOutput(result);
+    } catch {
+      setOutput([{ key: 'error', value: 'Invalid JSON input', className: 'removed' }]);
     }
   };
 
@@ -71,18 +55,26 @@ const JsonCompare = () => {
         placeholder="Enter Right JSON (New)"
       />
       <button onClick={handleJsonChange}>Compare</button>
-      <div
-        style={{ marginTop: '20px' }}
-        dangerouslySetInnerHTML={{ __html: output }}  // Rendering the highlighted HTML content
+      <textarea
+        value={output.map(item => item.value).join('\n')}
+        readOnly
+        rows="10"
+        cols="50"
+        placeholder="Output will appear here"
+        style={{
+          marginTop: '20px',
+          backgroundColor: '#f4f4f4',
+          fontFamily: 'monospace',
+          whiteSpace: 'pre',
+        }}
+        className="output-area"
       />
     </div>
   );
 };
 
 export default JsonCompare;
-2. Updated src/App.css
-Update the CSS to ensure that each row (key-value pair) is highlighted in different colors based on its status.
-
+2. Updated App.css
 css
 Copy code
 /* src/App.css */
@@ -108,6 +100,7 @@ textarea {
   font-family: monospace;
   font-size: 14px;
   resize: vertical;
+  border: 1px solid #ccc;
 }
 
 button {
@@ -121,4 +114,32 @@ button {
 
 button:hover {
   background-color: #45a049;
+}
+
+.output-area {
+  color: black;
+}
+Key Improvements
+Row-wise Output: The output displays as lines in a text area, mimicking a JSON structure with highlighted differences.
+Color Highlights: The changes are now visually marked in the text area with background-color logic applied via App.css.
+Output Example
+For example, with:
+
+Left JSON:
+
+json
+Copy code
+{
+  "fruit": "Apple",
+  "size": "Large",
+  "color": "Red"
+}
+Right JSON:
+
+json
+Copy code
+{
+  "fruit": "Banana",
+  "size": "Large",
+  "price": "1$"
 }
