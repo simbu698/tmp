@@ -1,145 +1,238 @@
-Updated Code
-1. Updated JsonCompare.js
+Folder Structure:
+java
+Copy code
+compare-json-app/
+├── public/
+│   ├── index.html
+├── src/
+│   ├── components/
+│   │   ├── CompareJson.jsx
+│   ├── App.js
+│   ├── index.js
+│   ├── App.css
+│   └── utils.js
+├── package.json
+└── .gitignore
+Step 1: Setup the React Project
+First, make sure you have node.js and npm installed. You can create a React app using create-react-app:
+
+bash
+Copy code
+npx create-react-app compare-json-app
+cd compare-json-app
+npm start
+Once the app is set up, you can organize your components and files according to the folder structure mentioned above.
+
+Step 2: Create the CompareJson Component
+This component will contain three text areas (left, right, and output) and the button for comparison.
+
+src/components/CompareJson.jsx
 jsx
 Copy code
-// src/JsonCompare.js
-import React, { useState } from 'react';
-import './App.css';
+import React, { useState } from "react";
+import { compareJsonObjects } from "../utils";
 
-const JsonCompare = () => {
-  const [leftJson, setLeftJson] = useState('{"fruit": "Apple", "size": "Large", "color": "Red"}');
-  const [rightJson, setRightJson] = useState('{"fruit": "Banana", "size": "Large", "price": "1$"}');
-  const [output, setOutput] = useState([]);
+const CompareJson = () => {
+  const [leftJson, setLeftJson] = useState("");
+  const [rightJson, setRightJson] = useState("");
+  const [outputJson, setOutputJson] = useState("");
 
-  const handleJsonChange = () => {
-    try {
-      const left = JSON.parse(leftJson);
-      const right = JSON.parse(rightJson);
-      const result = [];
-      const allKeys = new Set([...Object.keys(left), ...Object.keys(right)]);
-
-      allKeys.forEach((key) => {
-        if (left[key] !== right[key]) {
-          if (right[key] && left[key]) {
-            result.push({ key, value: `"${key}": "${right[key]}"`, className: 'changed' });
-          } else if (!right[key]) {
-            result.push({ key, value: `"${key}": "${left[key]}"`, className: 'removed' });
-          } else {
-            result.push({ key, value: `"${key}": "${right[key]}"`, className: 'added' });
-          }
-        } else {
-          result.push({ key, value: `"${key}": "${left[key]}"`, className: 'same' });
-        }
-      });
-
-      setOutput(result);
-    } catch {
-      setOutput([{ key: 'error', value: 'Invalid JSON input', className: 'removed' }]);
-    }
+  const handleCompare = () => {
+    const leftData = JSON.parse(leftJson);
+    const rightData = JSON.parse(rightJson);
+    const result = compareJsonObjects(leftData, rightData);
+    setOutputJson(JSON.stringify(result, null, 2));
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', margin: '20px' }}>
-      <textarea
-        value={leftJson}
-        onChange={(e) => setLeftJson(e.target.value)}
-        rows="10"
-        cols="50"
-        placeholder="Enter Left JSON (Base)"
-      />
-      <textarea
-        value={rightJson}
-        onChange={(e) => setRightJson(e.target.value)}
-        rows="10"
-        cols="50"
-        placeholder="Enter Right JSON (New)"
-      />
-      <button onClick={handleJsonChange}>Compare</button>
-      <textarea
-        value={output.map(item => item.value).join('\n')}
-        readOnly
-        rows="10"
-        cols="50"
-        placeholder="Output will appear here"
-        style={{
-          marginTop: '20px',
-          backgroundColor: '#f4f4f4',
-          fontFamily: 'monospace',
-          whiteSpace: 'pre',
-        }}
-        className="output-area"
-      />
+    <div className="compare-container">
+      <div className="textarea-container">
+        <textarea
+          className="json-textarea"
+          placeholder="Left JSON"
+          value={leftJson}
+          onChange={(e) => setLeftJson(e.target.value)}
+        />
+        <textarea
+          className="json-textarea"
+          placeholder="Right JSON"
+          value={rightJson}
+          onChange={(e) => setRightJson(e.target.value)}
+        />
+        <textarea
+          className="json-textarea output"
+          placeholder="Output JSON"
+          value={outputJson}
+          onChange={(e) => setOutputJson(e.target.value)}
+          readOnly
+        />
+      </div>
+      <button className="compare-button" onClick={handleCompare}>
+        Compare
+      </button>
     </div>
   );
 };
 
-export default JsonCompare;
-2. Updated App.css
+export default CompareJson;
+Step 3: Add the compareJsonObjects Utility Function
+This function compares two JSON objects and returns a modified version of the output JSON with the necessary highlights.
+
+src/utils.js
+javascript
+Copy code
+export const compareJsonObjects = (left, right) => {
+  const compare = (leftObj, rightObj) => {
+    const result = {};
+
+    const keys = new Set([
+      ...Object.keys(leftObj),
+      ...Object.keys(rightObj),
+    ]);
+
+    keys.forEach((key) => {
+      if (leftObj.hasOwnProperty(key) && !rightObj.hasOwnProperty(key)) {
+        result[key] = { value: leftObj[key], status: "missing-right" };
+      } else if (!leftObj.hasOwnProperty(key) && rightObj.hasOwnProperty(key)) {
+        result[key] = { value: rightObj[key], status: "extra-right" };
+      } else if (leftObj[key] !== rightObj[key]) {
+        result[key] = { value: leftObj[key], status: "value-mismatch" };
+      } else {
+        result[key] = { value: leftObj[key], status: "no-change" };
+      }
+    });
+
+    return result;
+  };
+
+  return compare(left, right);
+};
+Step 4: Style the Components
+Create a CSS file for styling the components and handling the different highlight colors for the output JSON.
+
+src/App.css
 css
 Copy code
-/* src/App.css */
-.added {
-  background-color: #a9c46c;
+.compare-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
 }
 
-.removed {
-  background-color: #ff9c73;
-}
-
-.changed {
-  background-color: #e5d0ac;
-}
-
-.same {
-  background-color: #d3d3d3;
-}
-
-textarea {
-  margin: 10px 0;
-  padding: 10px;
-  font-family: monospace;
-  font-size: 14px;
-  resize: vertical;
-  border: 1px solid #ccc;
-}
-
-button {
-  padding: 10px;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  cursor: pointer;
+.textarea-container {
+  display: flex;
+  width: 80%;
+  justify-content: space-between;
   margin-bottom: 20px;
 }
 
-button:hover {
-  background-color: #45a049;
+.json-textarea {
+  width: 30%;
+  height: 300px;
+  padding: 10px;
+  font-family: monospace;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  margin-right: 10px;
 }
 
-.output-area {
-  color: black;
+.json-textarea.output {
+  background-color: #f0f0f0;
+  resize: none;
 }
-Key Improvements
-Row-wise Output: The output displays as lines in a text area, mimicking a JSON structure with highlighted differences.
-Color Highlights: The changes are now visually marked in the text area with background-color logic applied via App.css.
-Output Example
-For example, with:
 
+.compare-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  background-color: #4caf50;
+  color: white;
+  border-radius: 5px;
+}
+
+.json-textarea output .missing-right {
+  background-color: red;
+}
+
+.json-textarea output .extra-right {
+  background-color: green;
+}
+
+.json-textarea output .value-mismatch {
+  background-color: brown;
+}
+
+.json-textarea output .no-change {
+  background-color: white;
+}
+Step 5: Integrate the Component in the Main App
+You can now integrate the CompareJson component into the main App component.
+
+src/App.js
+jsx
+Copy code
+import React from "react";
+import CompareJson from "./components/CompareJson";
+import './App.css';
+
+const App = () => {
+  return (
+    <div className="App">
+      <h1>JSON Comparator</h1>
+      <CompareJson />
+    </div>
+  );
+};
+
+export default App;
+Step 6: Render the App
+Finally, render the App component in index.js.
+
+src/index.js
+jsx
+Copy code
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+
+ReactDOM.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById('root')
+);
+Final Adjustments and Running the App
+Ensure that the app is running correctly by typing valid JSON objects into the "Left JSON" and "Right JSON" text areas.
+When you click the "Compare" button, the app will compare the two JSON objects and highlight differences in the "Output JSON" text area.
+You can adjust the comparison logic if needed (e.g., for nested objects, arrays, etc.).
+Additional Features:
+Validation: Add validation to handle invalid JSON format inputs.
+Nested JSON Comparison: Modify the compareJsonObjects function to handle nested objects, deep equality checking, and array comparison.
+Example Input:
 Left JSON:
-
 json
 Copy code
 {
-  "fruit": "Apple",
-  "size": "Large",
-  "color": "Red"
+  "name": "John",
+  "age": 25,
+  "address": {
+    "street": "123 Main St",
+    "city": "New York"
+  }
 }
 Right JSON:
-
 json
 Copy code
 {
-  "fruit": "Banana",
-  "size": "Large",
-  "price": "1$"
+  "name": "John",
+  "age": 30,
+  "address": {
+    "street": "123 Main St",
+    "city": "San Francisco"
+  },
+  "phone": "555-5555"
 }
