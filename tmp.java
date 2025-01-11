@@ -1,6 +1,3 @@
-1. Modify compareJsonObjects to Return HTML
-We need to update the compareJsonObjects function to generate HTML content that includes inline styles for highlighting.
-
 src/utils.js
 javascript
 Copy code
@@ -18,12 +15,21 @@ export const compareJsonObjects = (left, right) => {
       let rightValue = rightObj[key];
 
       if (leftObj.hasOwnProperty(key) && !rightObj.hasOwnProperty(key)) {
+        // Highlight missing in right side (red)
         outputHTML += `<div style="background-color: red;">"${key}": ${JSON.stringify(leftValue)}</div>`;
       } else if (!leftObj.hasOwnProperty(key) && rightObj.hasOwnProperty(key)) {
+        // Highlight extra in right side (green)
         outputHTML += `<div style="background-color: green;">"${key}": ${JSON.stringify(rightValue)}</div>`;
+      } else if (typeof leftValue === 'object' && typeof rightValue === 'object' && leftValue !== null && rightValue !== null) {
+        // Recursively compare nested objects
+        outputHTML += `<div>"${key}": {</div>`;
+        outputHTML += compare(leftValue, rightValue); // Recursive comparison
+        outputHTML += `<div>}</div>`;
       } else if (leftValue !== rightValue) {
+        // Highlight value mismatch (brown)
         outputHTML += `<div style="background-color: brown;">"${key}": ${JSON.stringify(leftValue)} (left) vs. ${JSON.stringify(rightValue)} (right)</div>`;
       } else {
+        // No change
         outputHTML += `<div>"${key}": ${JSON.stringify(leftValue)}</div>`;
       }
     });
@@ -33,14 +39,19 @@ export const compareJsonObjects = (left, right) => {
 
   return compare(left, right);
 };
-Explanation:
-This function now returns HTML instead of a plain JSON object. The result is wrapped in <div> elements with inline style attributes to apply background colors based on the comparison:
-Red for keys missing on the right side.
-Green for keys missing on the left side.
-Brown for mismatched values.
-Default (white background) for matching values.
-2. Modify the CompareJson Component to Use dangerouslySetInnerHTML
-Now, we modify the CompareJson component to inject this HTML into the output textarea.
+Explanation of Updates:
+Recursive Comparison for Nested Objects:
+
+If both leftValue and rightValue are objects (and not null), we recursively call the compare function to handle nested objects (like address).
+For each nested object, we highlight differences at the key-value level using the same logic (highlighting missing keys, extra keys, or mismatched values).
+Value Mismatches:
+
+If the values are different and they are not objects, we highlight the mismatch with a brown color.
+Handling Other Cases:
+
+Keys missing in one object and present in the other are highlighted in red (for the missing key) or green (for the extra key).
+Adjusting CompareJson.jsx (No Changes Needed)
+We don't need to make any changes to the CompareJson.jsx file, as the logic for rendering the output remains the same. The only difference is that the recursive comparison will now highlight the differences in nested objects as well.
 
 src/components/CompareJson.jsx
 jsx
@@ -92,11 +103,8 @@ const CompareJson = () => {
 };
 
 export default CompareJson;
-Explanation:
-The outputJson now stores HTML content instead of plain JSON. We use dangerouslySetInnerHTML to insert the HTML into the output area.
-This allows the highlighting to be rendered as part of the content in the output, using the colors defined in the compareJsonObjects function.
-3. Style Adjustments
-We'll make a small adjustment to the App.css to style the output area correctly and ensure the output area doesn't behave like a typical <textarea> (which doesn't support HTML rendering).
+CSS Adjustments (No Changes Needed)
+The existing CSS is sufficient for highlighting and rendering the output, so no changes are required in the App.css.
 
 src/App.css
 css
@@ -146,20 +154,7 @@ Copy code
   color: white;
   border-radius: 5px;
 }
-Explanation:
-The .json-textarea.output class styles the output section to resemble a textarea, but allows HTML rendering.
-The white-space: pre-wrap ensures that formatting (like new lines and spaces) is preserved, and word-wrap: break-word prevents text overflow.
-Final Changes and Expected Behavior
-After making these changes, the comparison should work as follows:
-
-Text Areas: There are three text areas: Left JSON, Right JSON, and Output JSON.
-Button: When you click the "Compare" button, the left and right JSONs are compared.
-Color Highlights:
-Red: Keys that exist in the left JSON but are missing in the right JSON.
-Green: Keys that exist in the right JSON but are missing in the left JSON.
-Brown: Keys that exist in both JSONs but have different values.
-White: Keys that exist and have the same value in both JSONs.
-Example:
+Example Input
 Left JSON:
 json
 Copy code
@@ -183,12 +178,3 @@ Copy code
   },
   "phone": "555-5555"
 }
-Expected Output:
-age will be highlighted in brown (value mismatch).
-address.city will be highlighted in brown (value mismatch).
-phone will be highlighted in green (extra-right).
-The name field will remain with a white background (no changes).
-Now, the Output JSON area will display the JSON with color highlighting as expected, instead of just raw JSON text.
-
-
-
