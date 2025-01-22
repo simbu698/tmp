@@ -1,57 +1,40 @@
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+package com.example.gridcache.config;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.CacheManager;
+import static org.mockito.Mockito.*;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(MockitoExtension.class)
-class CustomerDaoImplTest {
+public class CacheConfigTest {
 
     @InjectMocks
-    private CustomerDaoImpl customerDaoImpl; // Replace with your actual class name
+    private CacheConfig cacheConfig;
 
     @Mock
-    private EntityManager h2hEm;
-
-    @Mock
-    private Query mockQuery;
+    private CacheManager cacheManager;
 
     @BeforeEach
-    void setUp() {
-        customerDaoImpl = new CustomerDaoImpl(); // Ensure the right class is initialized
+    public void setUp() {
+        // Optionally, initialize the mock behavior if needed
+        when(cacheManager.getCacheNames()).thenReturn(Set.of("dataGridCache"));
     }
 
     @Test
-    void testGetNoOfCustomers_success() {
-        String testQuery = "SELECT COUNT(*) FROM customers";
-        Long expectedResult = 100L;
+    public void testCacheManager() {
+        // Use the cacheManager from the CacheConfig
+        CacheManager cacheManager = cacheConfig.cacheManager();
 
-        when(h2hEm.createNativeQuery(testQuery, Long.class)).thenReturn(mockQuery);
-        when(mockQuery.getSingleResult()).thenReturn(expectedResult);
+        // Verify that the cacheManager is not null
+        assertNotNull(cacheManager, "CacheManager should not be null");
 
-        Long actualResult = customerDaoImpl.getNoOfCustomers(testQuery);
-
-        assertNotNull(actualResult, "Result should not be null");
-        assertEquals(expectedResult, actualResult, "The number of customers should match the expected result");
-
-        verify(h2hEm).createNativeQuery(testQuery, Long.class);
-        verify(mockQuery).getSingleResult();
-    }
-
-    @Test
-    void testGetNoOfCustomers_exceptionHandling() {
-        String testQuery = "INVALID QUERY";
-
-        when(h2hEm.createNativeQuery(testQuery, Long.class)).thenThrow(new RuntimeException("Database error"));
-
-        Long result = customerDaoImpl.getNoOfCustomers(testQuery);
-
-        assertNull(result, "Result should be null when an exception occurs");
+        // Optionally, verify if the mock behavior was invoked (if it's useful)
+        verify(this.cacheManager, times(1)).getCacheNames();
     }
 }
