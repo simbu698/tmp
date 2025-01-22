@@ -1,43 +1,37 @@
-package com.example.gridcache.repository;
-
-import com.example.gridcache.model.MigData;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.Test;
 
-@ExtendWith(MockitoExtension.class)
-public class DataRepositoryTest {
-
-    @Mock
-    private EntityManager entityManager;
-
-    @Mock
-    private Query query;
-
-    @InjectMocks
-    private DataRepository dataRepository;
+public class YourClassTest {
 
     @Test
-    public void testGetGridData_ExceptionScenario() {
-        // Given: Mock the behavior of the EntityManager and Query
-        when(entityManager.createNativeQuery(anyString(), eq(MigData.class))).thenReturn(query);
-        when(query.getResultList()).thenThrow(new RuntimeException("Database query failed"));
+    void testConvertToString_withNonNullObject() {
+        YourClass yourClass = new YourClass();
+        Object obj = 123;  // A non-null object (e.g., Integer)
+        String result = yourClass.convertToString(obj);
+        assertEquals("123", result, "The string representation of the object should be '123'");
+    }
 
-        // When: Calling the method to simulate the exception
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            dataRepository.getGridData();
-        });
+    @Test
+    void testConvertToString_withNullObject() {
+        YourClass yourClass = new YourClass();
+        Object obj = null;  // A null object
+        String result = yourClass.convertToString(obj);
+        assertNull(result, "The result should be null when the object is null");
+    }
 
-        // Then: Verify the exception message
-        assertEquals("Database query failed", exception.getMessage());
+    @Test
+    void testConvertToString_withEmptyString() {
+        YourClass yourClass = new YourClass();
+        Object obj = "";  // An empty string
+        String result = yourClass.convertToString(obj);
+        assertEquals("", result, "The string representation of an empty string should be an empty string");
+    }
+
+    @Test
+    void testConvertToString_withStringObject() {
+        YourClass yourClass = new YourClass();
+        Object obj = "Hello World";  // A non-null string object
+        String result = yourClass.convertToString(obj);
+        assertEquals("Hello World", result, "The string representation of 'Hello World' should be 'Hello World'");
     }
 }
