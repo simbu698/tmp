@@ -1,37 +1,65 @@
-import static org.junit.jupiter.api.Assertions.*;
+package com.example.gridcache.service;
+
+import com.example.gridcache.model.MigData;
+import com.example.gridcache.repository.DataRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-public class YourClassTest {
+import java.util.Arrays;
+import java.util.List;
+
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
+public class DataServiceTest {
+
+    @Mock
+    private DataRepository dataRepository;
+
+    @InjectMocks
+    private DataService dataService;
 
     @Test
-    void testConvertToString_withNonNullObject() {
-        YourClass yourClass = new YourClass();
-        Object obj = 123;  // A non-null object (e.g., Integer)
-        String result = yourClass.convertToString(obj);
-        assertEquals("123", result, "The string representation of the object should be '123'");
+    void testRefreshCache() {
+        // Arrange
+        List<MigData> mockData = Arrays.asList(new MigData(), new MigData());
+        when(dataRepository.getGridData()).thenReturn(mockData);
+
+        // Act
+        List<MigData> result = dataService.refreshCache();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(dataRepository, times(1)).getGridData();
     }
 
     @Test
-    void testConvertToString_withNullObject() {
-        YourClass yourClass = new YourClass();
-        Object obj = null;  // A null object
-        String result = yourClass.convertToString(obj);
-        assertNull(result, "The result should be null when the object is null");
+    void testRefreshCacheThrowsException() {
+        // Arrange
+        when(dataRepository.getGridData()).thenThrow(new RuntimeException("Error"));
+
+        // Act & Assert
+        Exception exception = assertThrows(RuntimeException.class, () -> dataService.refreshCache());
+        assertEquals("Error while refreshing cache", exception.getMessage());
     }
 
     @Test
-    void testConvertToString_withEmptyString() {
-        YourClass yourClass = new YourClass();
-        Object obj = "";  // An empty string
-        String result = yourClass.convertToString(obj);
-        assertEquals("", result, "The string representation of an empty string should be an empty string");
-    }
+    void testGetDataFromCache() {
+        // Arrange
+        List<MigData> mockData = Arrays.asList(new MigData(), new MigData());
+        when(dataRepository.getCachedData()).thenReturn(mockData);
 
-    @Test
-    void testConvertToString_withStringObject() {
-        YourClass yourClass = new YourClass();
-        Object obj = "Hello World";  // A non-null string object
-        String result = yourClass.convertToString(obj);
-        assertEquals("Hello World", result, "The string representation of 'Hello World' should be 'Hello World'");
+        // Act
+        List<MigData> result = dataService.getDataFromCache();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(dataRepository, times(1)).getCachedData();
     }
 }
