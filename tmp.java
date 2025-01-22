@@ -1,40 +1,45 @@
-package com.example.gridcache.config;
+package com.example.gridcache.scheduler;
 
-import org.junit.jupiter.api.BeforeEach;
+import com.example.gridcache.service.DataService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cache.CacheManager;
+import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
+
 import static org.mockito.Mockito.*;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 @ExtendWith(MockitoExtension.class)
-public class CacheConfigTest {
-
-    @InjectMocks
-    private CacheConfig cacheConfig;
+public class DataCacheSchedulerTest {
 
     @Mock
-    private CacheManager cacheManager;
+    private DataService dataService;
 
-    @BeforeEach
-    public void setUp() {
-        // Optionally, initialize the mock behavior if needed
-        when(cacheManager.getCacheNames()).thenReturn(Set.of("dataGridCache"));
+    @InjectMocks
+    private DataCacheScheduler dataCacheScheduler;
+
+    @Test
+    void testRefreshCache() {
+        // Arrange: Ensure the refreshCache method behaves as expected
+        doNothing().when(dataService).refreshCache();  // Mocking the behavior of dataService.refreshCache()
+
+        // Act: Call the refreshCache method
+        dataCacheScheduler.refreshCache();
+
+        // Assert: Verify the refreshCache method of DataService was called once
+        verify(dataService, times(1)).refreshCache();
     }
 
     @Test
-    public void testCacheManager() {
-        // Use the cacheManager from the CacheConfig
-        CacheManager cacheManager = cacheConfig.cacheManager();
+    void testRefreshCacheWithException() {
+        // Arrange: Simulate an exception when calling refreshCache on DataService
+        doThrow(new RuntimeException("Cache refresh failed")).when(dataService).refreshCache();
 
-        // Verify that the cacheManager is not null
-        assertNotNull(cacheManager, "CacheManager should not be null");
+        // Act: Call the refreshCache method
+        dataCacheScheduler.refreshCache();
 
-        // Optionally, verify if the mock behavior was invoked (if it's useful)
-        verify(this.cacheManager, times(1)).getCacheNames();
+        // Assert: Verify that the refreshCache method was called and exception handling occurs
+        verify(dataService, times(1)).refreshCache();
     }
 }
