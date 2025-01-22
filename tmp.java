@@ -1,45 +1,69 @@
-package com.example.gridcache.scheduler;
+package com.example.gridcache.repository;
 
-import com.example.gridcache.service.DataService;
+import com.example.gridcache.model.MigData;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-public class DataCacheSchedulerTest {
+public class DataRepositoryTest {
 
     @Mock
-    private DataService dataService;
+    private EntityManager entityManager;
+
+    @Mock
+    private Query query;
 
     @InjectMocks
-    private DataCacheScheduler dataCacheScheduler;
+    private DataRepository dataRepository;
 
     @Test
-    void testRefreshCache() {
-        // Arrange: Ensure the refreshCache method behaves as expected
-        doNothing().when(dataService).refreshCache();  // Mocking the behavior of dataService.refreshCache()
+    public void testGetGridData() {
+        // Prepare mock data
+        MigData migData1 = new MigData();
+        migData1.setPId(1);
+        migData1.setFileCount(5);
 
-        // Act: Call the refreshCache method
-        dataCacheScheduler.refreshCache();
+        MigData migData2 = new MigData();
+        migData2.setPId(2);
+        migData2.setFileCount(10);
 
-        // Assert: Verify the refreshCache method of DataService was called once
-        verify(dataService, times(1)).refreshCache();
+        List<MigData> expectedData = Arrays.asList(migData1, migData2);
+
+        // Mock behavior of EntityManager and Query
+        when(entityManager.createNativeQuery(anyString(), eq(MigData.class))).thenReturn(query);
+        when(query.getResultList()).thenReturn(expectedData);
+
+        // Call the method
+        List<MigData> result = dataRepository.getGridData();
+
+        // Validate the result
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(1, result.get(0).getPId());
+        assertEquals(5, result.get(0).getFileCount());
+        assertEquals(2, result.get(1).getPId());
+        assertEquals(10, result.get(1).getFileCount());
+
+        // Verify the interactions
+        verify(entityManager, times(1)).createNativeQuery(anyString(), eq(MigData.class));
+        verify(query, times(1)).getResultList();
     }
 
     @Test
-    void testRefreshCacheWithException() {
-        // Arrange: Simulate an exception when calling refreshCache on DataService
-        doThrow(new RuntimeException("Cache refresh failed")).when(dataService).refreshCache();
-
-        // Act: Call the refreshCache method
-        dataCacheScheduler.refreshCache();
-
-        // Assert: Verify that the refreshCache method was called and exception handling occurs
-        verify(dataService, times(1)).refreshCache();
+    public void testGetCachedData() {
+        // Test the cached data method (which calls getGridData)
+        List<MigData> cachedData = dataRepository.getCachedData();
+        assertNotNull(cachedData);
     }
 }
