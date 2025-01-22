@@ -11,10 +11,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class CustomerServiceTest {
+class CustomerDaoImplTest {
 
     @InjectMocks
-    private CustomerService customerService; // Replace with your actual class name
+    private CustomerDaoImpl customerDaoImpl; // Replace with your actual class name
 
     @Mock
     private EntityManager h2hEm;
@@ -24,7 +24,7 @@ class CustomerServiceTest {
 
     @BeforeEach
     void setUp() {
-        customerService = new CustomerService(); // Ensure the right class is initialized
+        customerDaoImpl = new CustomerDaoImpl(); // Ensure the right class is initialized
     }
 
     @Test
@@ -35,7 +35,7 @@ class CustomerServiceTest {
         when(h2hEm.createNativeQuery(testQuery, Long.class)).thenReturn(mockQuery);
         when(mockQuery.getSingleResult()).thenReturn(expectedResult);
 
-        Long actualResult = customerService.getNoOfCustomers(testQuery);
+        Long actualResult = customerDaoImpl.getNoOfCustomers(testQuery);
 
         assertNotNull(actualResult, "Result should not be null");
         assertEquals(expectedResult, actualResult, "The number of customers should match the expected result");
@@ -50,7 +50,7 @@ class CustomerServiceTest {
 
         when(h2hEm.createNativeQuery(testQuery, Long.class)).thenThrow(new RuntimeException("Database error"));
 
-        Long result = customerService.getNoOfCustomers(testQuery);
+        Long result = customerDaoImpl.getNoOfCustomers(testQuery);
 
         assertNull(result, "Result should be null when an exception occurs");
     }
