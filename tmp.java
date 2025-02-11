@@ -1,15 +1,4 @@
-Steps to Implement:
-Setup Spring Boot and Dependencies
-Add the required dependencies in pom.xml.
-Configure Cassandra DataSources
-Define separate configurations for each keyspace.
-Create Repository and Entity Classes
-Define entities and repositories for both keyspaces.
-Service Layer
-Implement a service to retrieve data.
-Controller Layer
-Expose REST APIs to fetch data.
-1. Add Dependencies (pom.xml)
+1. Dependencies (pom.xml)
 xml
 Copy
 Edit
@@ -26,36 +15,28 @@ Edit
         <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
 
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-actuator</artifactId>
-    </dependency>
-
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-devtools</artifactId>
-        <scope>runtime</scope>
-        <optional>true</optional>
-    </dependency>
-
-    <!-- Lombok -->
+    <!-- Lombok for reducing boilerplate code -->
     <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
         <scope>provided</scope>
     </dependency>
-
 </dependencies>
-2. Configure Cassandra for Two Keyspaces
-Create two separate configuration classes.
-
+2. Configuration for Cassandra Keyspaces
 CassandraConfigKeyspaceOne.java
 java
 Copy
 Edit
+package com.example.config;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.cassandra.config.AbstractCassandraConfiguration;
+import org.springframework.data.cassandra.core.CassandraTemplate;
+import com.datastax.oss.driver.api.core.CqlSession;
+
 @Configuration
-@EnableCassandraRepositories(basePackages = "com.example.repo.keyspace1",
-        cassandraTemplateRef = "keyspaceOneTemplate")
 public class CassandraConfigKeyspaceOne extends AbstractCassandraConfiguration {
 
     @Value("${spring.data.cassandra.keyspace-name-one}")
@@ -75,9 +56,16 @@ CassandraConfigKeyspaceTwo.java
 java
 Copy
 Edit
+package com.example.config;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.cassandra.config.AbstractCassandraConfiguration;
+import org.springframework.data.cassandra.core.CassandraTemplate;
+import com.datastax.oss.driver.api.core.CqlSession;
+
 @Configuration
-@EnableCassandraRepositories(basePackages = "com.example.repo.keyspace2",
-        cassandraTemplateRef = "keyspaceTwoTemplate")
 public class CassandraConfigKeyspaceTwo extends AbstractCassandraConfiguration {
 
     @Value("${spring.data.cassandra.keyspace-name-two}")
@@ -98,6 +86,15 @@ Keyspace 1 - Entity (UserKeyspaceOne.java)
 java
 Copy
 Edit
+package com.example.entity;
+
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.util.UUID;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -114,6 +111,13 @@ Keyspace 1 - Repository (UserRepositoryKeyspaceOne.java)
 java
 Copy
 Edit
+package com.example.repository;
+
+import com.example.entity.UserKeyspaceOne;
+import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.stereotype.Repository;
+import java.util.UUID;
+
 @Repository
 public interface UserRepositoryKeyspaceOne extends CassandraRepository<UserKeyspaceOne, UUID> {
 }
@@ -121,6 +125,15 @@ Keyspace 2 - Entity (UserKeyspaceTwo.java)
 java
 Copy
 Edit
+package com.example.entity;
+
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.util.UUID;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -137,13 +150,31 @@ Keyspace 2 - Repository (UserRepositoryKeyspaceTwo.java)
 java
 Copy
 Edit
+package com.example.repository;
+
+import com.example.entity.UserKeyspaceTwo;
+import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.stereotype.Repository;
+import java.util.UUID;
+
 @Repository
 public interface UserRepositoryKeyspaceTwo extends CassandraRepository<UserKeyspaceTwo, UUID> {
 }
 4. Create Service Layer
+UserService.java
 java
 Copy
 Edit
+package com.example.service;
+
+import com.example.entity.UserKeyspaceOne;
+import com.example.entity.UserKeyspaceTwo;
+import com.example.repository.UserRepositoryKeyspaceOne;
+import com.example.repository.UserRepositoryKeyspaceTwo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import java.util.List;
+
 @Service
 public class UserService {
 
@@ -165,9 +196,20 @@ public class UserService {
     }
 }
 5. Create REST Controller
+UserController.java
 java
 Copy
 Edit
+package com.example.controller;
+
+import com.example.entity.UserKeyspaceOne;
+import com.example.entity.UserKeyspaceTwo;
+import com.example.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -202,9 +244,9 @@ spring.data.cassandra.keyspace-name-one=keyspace_one
 
 # Keyspace Two
 spring.data.cassandra.keyspace-name-two=keyspace_two
-Running the Application
-Ensure Cassandra is running (cqlsh should be accessible).
-Create required keyspaces and tables:
+7. Create Keyspaces and Tables in Cassandra
+Run the following queries in cqlsh:
+
 sql
 Copy
 Edit
@@ -213,14 +255,15 @@ CREATE TABLE keyspace_one.users (id UUID PRIMARY KEY, name text, age int);
 
 CREATE KEYSPACE keyspace_two WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'};
 CREATE TABLE keyspace_two.customers (id UUID PRIMARY KEY, name text, email text);
-Start the Spring Boot application.
-Testing the API
-Get users from keyspace_one:
+8. Run the Application
+Start your Spring Boot application and test with:
+
+Get users from Keyspace 1
 bash
 Copy
 Edit
 GET http://localhost:8080/users/keyspace1
-Get users from keyspace_two:
+Get users from Keyspace 2
 bash
 Copy
 Edit
