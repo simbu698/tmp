@@ -1,6 +1,3 @@
-import com.datastax.oss.driver.api.core.CqlSession;
-import java.net.InetSocketAddress;
-
 public class CassandraConnection {
     public static void main(String[] args) {
         // Replace with your Cassandra details
@@ -16,11 +13,16 @@ public class CassandraConnection {
                 .withAuthCredentials(username, password)
                 .withKeyspace(keyspace)
                 .withLocalDatacenter(datacenter)
+                .withSslContext(DefaultDriverConfigLoader.fromClasspath("application.conf").getSslContext())
                 .build()) {
             System.out.println("Connected to Cassandra!");
 
-            // Example query to check the connection
-            session.execute("SELECT release_version FROM system.local").forEach(row -> 
+            // Example query to check the connection with a specified consistency level
+            session.execute(
+                session.prepare("SELECT release_version FROM system.local")
+                    .bind()
+                    .setConsistencyLevel(ConsistencyLevel.QUORUM)
+            ).forEach(row -> 
                 System.out.println("Cassandra Version: " + row.getString("release_version"))
             );
         } catch (Exception e) {
