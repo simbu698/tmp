@@ -1,5 +1,4 @@
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.auth.PlainTextAuthProvider;
 import java.net.InetSocketAddress;
 
 public class CassandraConnection {
@@ -14,7 +13,7 @@ public class CassandraConnection {
 
         try (CqlSession session = CqlSession.builder()
                 .addContactPoint(new InetSocketAddress(host, port))
-                .withAuthProvider(new PlainTextAuthProvider(username, password))
+                .withAuthCredentials(username, password)
                 .withKeyspace(keyspace)
                 .withLocalDatacenter(datacenter)
                 .build()) {
