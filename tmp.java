@@ -408,3 +408,185 @@ export default ConfirmDialog;
 
 
 
+
+
+
+
+
+
+
+
+
+
+Got it! Your table names (lookup, map, etc.) are constant, but the data is coming dynamically from an uploaded Excel file. The ConfirmDialog.js will now handle any number of tables dynamically based on the parsed Excel data.
+
+Updated ConfirmDialog.js (Dynamic Data Handling)
+
+import React, { useState } from "react";
+import "../styles/ConfirmDialog.css";
+
+const ConfirmDialog = ({ open, onClose, onConfirm, data }) => {
+    const tableNames = Object.keys(data); // Get table names dynamically
+    const [activeTab, setActiveTab] = useState(tableNames[0]); // Default to first table
+
+    if (!open || !data || tableNames.length === 0) return null;
+
+    return (
+        <div className="overlay">
+            <div className="dialog scrollable-page resizable-dialog scalable large-dialog">
+                <h2>Confirm File Upload</h2>
+
+                {/* Scrollable Tabs Container */}
+                <div className="tabs-container">
+                    <div className="tabs">
+                        {tableNames.map((tableName, index) => (
+                            <button
+                                key={index}
+                                className={activeTab === tableName ? "active" : ""}
+                                onClick={() => setActiveTab(tableName)}
+                            >
+                                {tableName.toUpperCase()}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Dynamic Table Rendering */}
+                <div className="grid-container scrollable scalable">
+                    {data[activeTab]?.length > 0 ? (
+                        <>
+                            <div className="grid-header dynamic-table">
+                                {Object.keys(data[activeTab][0]).map((column, index) => (
+                                    <div key={index}>{column}</div>
+                                ))}
+                            </div>
+                            {data[activeTab].map((row, index) => (
+                                <div className="grid-row dynamic-table" key={index}>
+                                    {Object.values(row).map((value, idx) => (
+                                        <div key={idx}>{value}</div>
+                                    ))}
+                                </div>
+                            ))}
+                        </>
+                    ) : (
+                        <p className="no-data">No Data Available</p>
+                    )}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="dialog-actions">
+                    <button onClick={onClose} className="cancel">Cancel</button>
+                    <button onClick={onConfirm} className="confirm">Confirm</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default ConfirmDialog;
+
+Updated ConfirmDialog.css
+
+/* Tabs Container (Scrollable) */
+.tabs-container {
+    overflow-x: auto;
+    white-space: nowrap;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #ccc;
+}
+
+.tabs {
+    display: flex;
+    gap: 8px;
+}
+
+.tabs button {
+    padding: 10px 15px;
+    border: none;
+    background: #ddd;
+    cursor: pointer;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.tabs button.active {
+    background: black;
+    color: white;
+}
+
+/* Table Container */
+.grid-container {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    border: 1px solid black;
+    max-height: 65vh;
+    max-width: 100%;
+    resize: both;
+}
+
+/* Grid Styling */
+.grid-header, .grid-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    text-align: center;
+    border-bottom: 1px solid black;
+}
+
+.grid-header {
+    font-weight: bold;
+    background: #f0f0f0;
+    position: sticky;
+    top: 0;
+}
+
+.grid-row div {
+    padding: 8px;
+    border-right: 1px solid black;
+}
+
+.grid-row div:last-child, .grid-header div:last-child {
+    border-right: none;
+}
+
+/* No Data Message */
+.no-data {
+    text-align: center;
+    color: red;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+Key Enhancements:
+
+✅ Dynamic Excel Data Handling – Parses table names and structures data dynamically.
+✅ Handles Variable Columns – Reads column headers directly from Excel.
+✅ Displays “No Data Available” Message – If a table has no records.
+✅ Fully Scrollable & Resizable – Handles large tables efficiently.
+
+Integration Example (Data from Excel)
+
+Once the Excel file is parsed, pass the data like this:
+
+const excelData = {
+    lookup: [
+        { ID: "ABC", FILE_TYPE: "PAY", FILE_FORMAT: "CREDIT", TEMPLATE_NAME: "TEMP1" },
+        { ID: "DEF", FILE_TYPE: "PAY", FILE_FORMAT: "DEBIT", TEMPLATE_NAME: "TEMP2" }
+    ],
+    map: [
+        { PARTNER_ID: "ABC", DATA_TYPE: "PAY", DATA_FORMAT: "CREDIT", AUTO_ENABLED: "Y" },
+        { PARTNER_ID: "DEF", DATA_TYPE: "PAY", DATA_FORMAT: "DEBIT", AUTO_ENABLED: "Y" }
+    ],
+    table3: [],
+    table4: [{ Col1: "D", Col2: "E", Col3: "F" }],
+    table5: [{ Col1: "G", Col2: "H", Col3: "I" }]
+};
+
+Then use:
+
+<ConfirmDialog open={true} onClose={handleClose} onConfirm={handleUpload} data={excelData} />
+
+This will automatically generate tabs and tables from the Excel file data, regardless of how many tables and columns there are. Let me know if you need any further tweaks! 🚀
+
+
