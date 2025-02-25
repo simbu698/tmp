@@ -246,7 +246,49 @@ export default ConfirmDialog;
 Let me know if you need more modifications! 🚀
 
 
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
+.dialog {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    width: 50%;
+    text-align: center;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.grid-header {
+    font-weight: bold;
+    display: contents;
+}
+
+.grid-row {
+    display: contents;
+}
+
+.dialog-actions {
+    margin-top: 20px;
+}
+
+.cancel {
+    margin-right: 10px;
+}
 
 
 
