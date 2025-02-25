@@ -366,6 +366,125 @@ const ConfirmDialog = ({ open, onClose, onConfirm, data }) => {
 export default ConfirmDialog;
 
 
+/* Overlay to blur background */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Dialog container */
+.dialog {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 900px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    border: 1px solid black;
+}
+
+/* Tabs container */
+.tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.tabs button {
+    padding: 10px 20px;
+    margin: 0 5px;
+    border: none;
+    background: #ddd;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.tabs button.active {
+    background: black;
+    color: white;
+}
+
+/* Table container */
+.grid-container {
+    display: flex;
+    flex-direction: column;
+    overflow-x: auto;
+    border: 1px solid black;
+    max-height: 60vh;
+}
+
+/* Table header */
+.grid-header {
+    display: grid;
+    font-weight: bold;
+    background: #f0f0f0;
+    text-align: center;
+}
+
+.lookup-table {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.map-table {
+    grid-template-columns: repeat(7, 1fr);
+}
+
+/* Table row */
+.grid-row {
+    display: grid;
+    text-align: center;
+}
+
+.grid-header div, .grid-row div {
+    padding: 8px;
+    border: 1px solid black;
+}
+
+/* Scrollable content */
+.scrollable {
+    overflow-y: auto;
+}
+
+/* Dialog actions */
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.dialog-actions button {
+    padding: 8px 15px;
+    margin-left: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.dialog-actions .cancel {
+    background: red;
+    color: white;
+}
+
+.dialog-actions .confirm {
+    background: green;
+    color: white;
+}
+
+/* Resizable window */
+.resizable-dialog {
+    resize: both;
+    overflow: auto;
+}
 
 
 
