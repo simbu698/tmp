@@ -290,52 +290,69 @@ Let me know if you need more modifications! 🚀
     margin-right: 10px;
 }
 
-import React from "react";
+
+
+import React, { useState } from "react";
 import "../styles/ConfirmDialog.css";
 
 const ConfirmDialog = ({ open, onClose, onConfirm, data }) => {
     if (!open || !data) return null;
 
+    const [activeTab, setActiveTab] = useState("lookup");
+
     return (
         <div className="overlay">
-            <div className="dialog">
+            <div className="dialog scrollable-page">
                 <h2>Confirm File Upload</h2>
                 
-                <h3>LOOKUP Table</h3>
-                <div className="grid-container">
-                    <div className="grid-header">
-                        <div>ID</div>
-                        <div>FILE_TYPE</div>
-                        <div>FILE_FORMAT</div>
-                        <div>TEMPLATE_NAME</div>
-                    </div>
-                    {data.lookup.map((row, index) => (
-                        <div className="grid-row" key={index}>
-                            <div>{row.ID}</div>
-                            <div>{row.FILE_TYPE}</div>
-                            <div>{row.FILE_FORMAT}</div>
-                            <div>{row.TEMPLATE_NAME}</div>
-                        </div>
-                    ))}
+                <div className="tabs">
+                    <button 
+                        className={activeTab === "lookup" ? "active" : ""} 
+                        onClick={() => setActiveTab("lookup")}
+                    >LOOKUP Table</button>
+                    <button 
+                        className={activeTab === "map" ? "active" : ""} 
+                        onClick={() => setActiveTab("map")}
+                    >MAP Table</button>
                 </div>
 
-                <h3>MAP Table</h3>
-                <div className="grid-container">
-                    <div className="grid-header">
-                        <div>PARTNER_ID</div>
-                        <div>DATA_TYPE</div>
-                        <div>DATA_FORMAT</div>
-                        <div>AUTO_ENABLED</div>
-                    </div>
-                    {data.map.map((row, index) => (
-                        <div className="grid-row" key={index}>
-                            <div>{row.PARTNER_ID}</div>
-                            <div>{row.DATA_TYPE}</div>
-                            <div>{row.DATA_FORMAT}</div>
-                            <div>{row.AUTO_ENABLED}</div>
+                {activeTab === "lookup" && (
+                    <div className="grid-container scrollable">
+                        <div className="grid-header">
+                            <div>ID</div>
+                            <div>FILE_TYPE</div>
+                            <div>FILE_FORMAT</div>
+                            <div>TEMPLATE_NAME</div>
                         </div>
-                    ))}
-                </div>
+                        {data.lookup.map((row, index) => (
+                            <div className="grid-row" key={index}>
+                                <div>{row.ID}</div>
+                                <div>{row.FILE_TYPE}</div>
+                                <div>{row.FILE_FORMAT}</div>
+                                <div>{row.TEMPLATE_NAME}</div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {activeTab === "map" && (
+                    <div className="grid-container scrollable">
+                        <div className="grid-header">
+                            <div>PARTNER_ID</div>
+                            <div>DATA_TYPE</div>
+                            <div>DATA_FORMAT</div>
+                            <div>AUTO_ENABLED</div>
+                        </div>
+                        {data.map.map((row, index) => (
+                            <div className="grid-row" key={index}>
+                                <div>{row.PARTNER_ID}</div>
+                                <div>{row.DATA_TYPE}</div>
+                                <div>{row.DATA_FORMAT}</div>
+                                <div>{row.AUTO_ENABLED}</div>
+                            </div>
+                        ))}
+                    </div>
+                )}
 
                 <div className="dialog-actions">
                     <button onClick={onClose} className="cancel">Cancel</button>
@@ -347,6 +364,7 @@ const ConfirmDialog = ({ open, onClose, onConfirm, data }) => {
 };
 
 export default ConfirmDialog;
+
 
 
 
