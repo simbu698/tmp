@@ -1,38 +1,36 @@
-import React from "react";
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Table, TableHead, TableRow, TableCell, TableBody } from "@mui/material";
+import React, { useState } from "react";
+import * as XLSX from "xlsx";
+import ConfirmDialog from "./ConfirmDialog";
+import { uploadData } from "./ApiService";
 
-const ConfirmDialog = ({ open, onClose, onConfirm, data }) => {
-    if (!data) return null;
+const FileUpload = () => {
+    const [fileData, setFileData] = useState(null);
+    const [openDialog, setOpenDialog] = useState(false);
+
+    const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+
+                const sheet1 = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                const sheet2 = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[1]]);
+
+                setFileData({ lookup: sheet1, map: sheet2 });
+                setOpenDialog(true);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-            <DialogTitle>Confirm File Upload</DialogTitle>
-            <DialogContent>
-                <h3>LOOKUP Table</h3>
-                <Table size="small">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>ID</TableCell><TableCell>FILE_TYPE</TableCell><TableCell>FILE_FORMAT</TableCell><TableCell>TEMPLATE_NAME</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {data.lookup.map((row, index) => (
-                            <TableRow key={index}>
-                                <TableCell>{row.ID}</TableCell>
-                                <TableCell>{row.FILE_TYPE}</TableCell>
-                                <TableCell>{row.FILE_FORMAT}</TableCell>
-                                <TableCell>{row.TEMPLATE_NAME}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={onClose} color="secondary">Cancel</Button>
-                <Button onClick={onConfirm} color="primary">Confirm</Button>
-            </DialogActions>
-        </Dialog>
+        <div>
+            <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
+            <ConfirmDialog open={openDialog} onClose={() => setOpenDialog(false)} onConfirm={() => uploadData(fileData)} data={fileData} />
+        </div>
     );
 };
 
-export default ConfirmDialog;
+export default FileUpload;
