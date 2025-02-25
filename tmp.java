@@ -290,6 +290,65 @@ Let me know if you need more modifications! 🚀
     margin-right: 10px;
 }
 
+import React from "react";
+import "../styles/ConfirmDialog.css";
+
+const ConfirmDialog = ({ open, onClose, onConfirm, data }) => {
+    if (!open || !data) return null;
+
+    return (
+        <div className="overlay">
+            <div className="dialog">
+                <h2>Confirm File Upload</h2>
+                
+                <h3>LOOKUP Table</h3>
+                <div className="grid-container">
+                    <div className="grid-header">
+                        <div>ID</div>
+                        <div>FILE_TYPE</div>
+                        <div>FILE_FORMAT</div>
+                        <div>TEMPLATE_NAME</div>
+                    </div>
+                    {data.lookup.map((row, index) => (
+                        <div className="grid-row" key={index}>
+                            <div>{row.ID}</div>
+                            <div>{row.FILE_TYPE}</div>
+                            <div>{row.FILE_FORMAT}</div>
+                            <div>{row.TEMPLATE_NAME}</div>
+                        </div>
+                    ))}
+                </div>
+
+                <h3>MAP Table</h3>
+                <div className="grid-container">
+                    <div className="grid-header">
+                        <div>PARTNER_ID</div>
+                        <div>DATA_TYPE</div>
+                        <div>DATA_FORMAT</div>
+                        <div>AUTO_ENABLED</div>
+                    </div>
+                    {data.map.map((row, index) => (
+                        <div className="grid-row" key={index}>
+                            <div>{row.PARTNER_ID}</div>
+                            <div>{row.DATA_TYPE}</div>
+                            <div>{row.DATA_FORMAT}</div>
+                            <div>{row.AUTO_ENABLED}</div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="dialog-actions">
+                    <button onClick={onClose} className="cancel">Cancel</button>
+                    <button onClick={onConfirm} className="confirm">Confirm</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default ConfirmDialog;
+
+
 
 
 
